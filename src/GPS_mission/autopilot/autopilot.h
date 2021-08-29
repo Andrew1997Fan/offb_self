@@ -43,7 +43,7 @@ class autopilot{
 		int waypoint_num = 0;	
 
 		double vector_x,vector_y;
-		double camera_err_x,camera_err_y;
+//		double camera_err_x,camera_err_y;
 		
 		double target_now[3];
 		double pose_now[3];

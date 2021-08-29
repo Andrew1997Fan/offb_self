@@ -63,7 +63,7 @@ void autopilot::update(double *recent_pose){
 				ROS_INFO("all waypoints reached");
 				state = autopilot_state::detection_and_move;
 				if(get_state() == autopilot_state::detection_and_move){
-					detection_and_move(camera_err_x,camera_err_y);
+					detection_and_move(this->vector_x,this->vector_y);
 				}
 				//if(get_state() == autopilot_state::apriltag ){
 				//set_target_to_apriltag(now_pose); //get new target
@@ -74,6 +74,7 @@ void autopilot::update(double *recent_pose){
 	
 	if (get_state() == autopilot_state::apriltag){
 				if(is_arrived_xy() == true){
+					ROS_INFO("Arrived the place of apriltag");
 					state = autopilot_state::land;
 				}
 	}

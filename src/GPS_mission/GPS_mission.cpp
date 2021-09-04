@@ -26,10 +26,11 @@
 #define KProll 1.0f//1  2
 
 bool init=0;
-
+double vector_x = 0;
+double vector_y = 0;
 //
 gps_transform gps;
-autopilot ap(gps);
+//autopilot ap(gps);
 
 
 using namespace std;
@@ -72,15 +73,15 @@ void gps_pos_cb(const sensor_msgs::NavSatFix::ConstPtr& msg) {
 }
 
 void tf_Callback(const tf2_msgs::TFMessage::ConstPtr &msg){
-	double vector_x = msg->transforms.back().transform.translation.x;
-	double vector_y = msg->transforms.back().transform.translation.y;
+	vector_x = msg->transforms.back().transform.translation.x;
+	vector_y = msg->transforms.back().transform.translation.y;
 	//double vectorz =  msg->transforms.back().transform.translation.z;
 	std::cout << "Vector X is :" << msg->transforms.back().transform.translation.x << '\n';
 	std::cout << "Vector Y is :" << msg->transforms.back().transform.translation.y << '\n';
 	//std::cout << "Vector Z is :" << msg->transforms.back().transform.translation.z << '\n'; // z dont need  to show
-
-	ap.apriltag_update(vector_x,vector_y);
-	ap.detection_and_move(vector_x,vector_y);
+	
+	//ap.apriltag_update(vector_x,vector_y);
+	//ap.detection_and_move(vector_x,vector_y);
 
 }
 
@@ -215,7 +216,7 @@ int main(int argc, char **argv)
 		ros::spinOnce();
         rate.sleep();
     }
-    
+    	autopilot ap(gps);
 	ap.add_waypoint(47.3977545,8.5457408,535.5597166987343);
 	ap.add_waypoint(47.3978816,8.5459172,535.8185302211843);
 	ap.show_waypoints();
@@ -249,6 +250,7 @@ int main(int argc, char **argv)
 		double now_pos[3];
 		gps.get_ENU(now_pos);
 		ap.update(now_pos);
+		ap.apriltag_update(vector_x,vector_y);
 		if(ap.get_state() == autopilot_state::not_flying){
 			vs.twist.linear.x = 0;
 			vs.twist.linear.y = 0;

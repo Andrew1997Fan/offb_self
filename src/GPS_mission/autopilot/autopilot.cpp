@@ -54,6 +54,9 @@ void autopilot::update(double *recent_pose){
 		this->gps.update(lat,lon,alt);
 		this->gps.get_ENU(target_now);
 		target_now[2] = 1;
+		std::cout << "target_now[0]" << target_now[0] << std::endl;
+		std::cout << "target_now[1]" << target_now[1] << std::endl;
+		std::cout << "target_now[2]" << target_now[2] << std::endl;
 		if(is_arrived_xy() == true){
 			waypoint_num ++;
 			if(waypoint_num != waypoints.size()){
@@ -64,20 +67,21 @@ void autopilot::update(double *recent_pose){
 				state = autopilot_state::detection_and_move;
 				if(get_state() == autopilot_state::detection_and_move){
 					detection_and_move(this->vector_x,this->vector_y);
+
+					}
 				}
-				//if(get_state() == autopilot_state::apriltag ){
-				//set_target_to_apriltag(now_pose); //get new target
-				//	apriltag(vector_x,vector_y);  //inside should be the comparison of tf 
-				}
+
 			}
 		}
 	
 	if (get_state() == autopilot_state::apriltag){
-				if(is_arrived_xy() == true){
-					ROS_INFO("Arrived the place of apriltag");
-					state = autopilot_state::land;
-				}
+		if(is_arrived_xy() == true){
+		ROS_INFO("Arrived the place of apriltag");
+		state = autopilot_state::land;
+		}
 	}
+	
+
 	if (get_state() == autopilot_state::land){
 		land();
 		ROS_INFO_ONCE("start landing");
@@ -158,16 +162,21 @@ void  autopilot::takeoff(){
 void autopilot::detection_and_move(double vector_x,double vector_y){
 	double camera_err_x = vector_x; // ENU to Camera different coordinate
 	double camera_err_y = vector_y;
-	target_now[0] = pose_now[0] + camera_err_x ;
+	std::cout << "cam_err_x:" << camera_err_x << std::endl;
+	std::cout << "cam_err_y:" << camera_err_y << std::endl;
+	target_now[0] = pose_now[0] + camera_err_x;
 	target_now[1] = pose_now[1] + camera_err_y;
+	std::cout << "target_now[0]:" << target_now[0] << std::endl;
+	std::cout << "target_now[1]:" << target_now[1] << std::endl;
 	state = autopilot_state::apriltag;
+	ROS_INFO("detection mission complete");
 }
-void autopilot::apriltag(double vector_x,double vector_y){
+/*void autopilot::apriltag(double vector_x,double vector_y){
 	if(fabs(vector_x) < 0.01 && fabs(vector_y) < 0.01  ){//if ENU transorm is accurate it should go to land
 		ROS_INFO("drone is aboved  apriltag ready to land");
 		state = autopilot_state::land;
 	}
-}
+}*/
 
 void autopilot::land(){
 	target_now[0] = pose_now[0];

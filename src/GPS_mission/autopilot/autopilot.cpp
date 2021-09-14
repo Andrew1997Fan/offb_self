@@ -53,10 +53,9 @@ void autopilot::update(double *recent_pose){
 
 		this->gps.update(lat,lon,alt);
 		this->gps.get_ENU(target_now);
-		target_now[2] = 1;
-		std::cout << "target_now[0]" << target_now[0] << std::endl;
-		std::cout << "target_now[1]" << target_now[1] << std::endl;
-		std::cout << "target_now[2]" << target_now[2] << std::endl;
+		target_now[2] = 3;
+		
+		
 		if(is_arrived_xy() == true){
 			waypoint_num ++;
 			if(waypoint_num != waypoints.size()){
@@ -155,7 +154,7 @@ void autopilot::show_waypoints(){
 void  autopilot::takeoff(){
 	target_now[0] = pose_start[0];
 	target_now[1] = pose_start[1];
-	target_now[2] = 1;
+	target_now[2] = 3;
 }
 
 // Apriltags

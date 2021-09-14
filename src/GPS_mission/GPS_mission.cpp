@@ -76,8 +76,6 @@ void tf_Callback(const tf2_msgs::TFMessage::ConstPtr &msg){
 	vector_x = msg->transforms.back().transform.translation.x;
 	vector_y = msg->transforms.back().transform.translation.y;
 	//double vectorz =  msg->transforms.back().transform.translation.z;
-	std::cout << "Vector X is :" << msg->transforms.back().transform.translation.x << '\n';
-	std::cout << "Vector Y is :" << msg->transforms.back().transform.translation.y << '\n';
 	//std::cout << "Vector Z is :" << msg->transforms.back().transform.translation.z << '\n'; // z dont need  to show
 	
 	//ap.apriltag_update(vector_x,vector_y);
@@ -217,8 +215,20 @@ int main(int argc, char **argv)
         rate.sleep();
     }
     	autopilot ap(gps);
-	ap.add_waypoint(47.3977545,8.5457408,535.5597166987343);
-	ap.add_waypoint(47.3978816,8.5459172,535.8185302211843);
+	//ap.add_waypoint(47.3977545,8.5457408,535.5597166987343);
+	//ap.add_waypoint(47.3978816,8.5459172,535.8185302211843);
+	/*ap.add_waypoint(24.7854493,120.9963335,135.389161427);
+	ap.add_waypoint(24.7852375,120.9963214,135.257564707);
+	ap.add_waypoint(24.7852195,120.9965416,135.099310392);
+	ap.add_waypoint(24.7854792,120.9965858,133.808804986);*/
+	ap.add_waypoint(24.7855152,120.9964698,150.44169889);
+	ap.add_waypoint(24.7853801,120.9965684,150.33637547);
+	ap.add_waypoint(24.7854674,120.9966012,150.548001302);
+	
+	//ap.add_waypoint(24.7866985,120.9931734,107.21514009);
+	//ap.add_waypoint(24.786802,120.9930468,106.896483178);
+	//ap.add_waypoint(24.7866371,120.993072,107.271823743);
+	
 	ap.show_waypoints();
 	char check;
 	cout <<"start to fly?[y\\n]";

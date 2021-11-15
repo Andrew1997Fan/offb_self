@@ -54,8 +54,6 @@ void autopilot::update(double *recent_pose){
 		this->gps.update(lat,lon,alt);
 		this->gps.get_ENU(target_now);
 		target_now[2] = 6;
-		
-		
 		if(is_arrived_xy() == true){
 			waypoint_num ++;
 			if(waypoint_num != waypoints.size()){

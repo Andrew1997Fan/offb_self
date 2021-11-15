@@ -25,11 +25,12 @@
 #define KPz 1.0f//
 #define KProll 1.0f//1  2
 
-
 bool init=0;
-
+double vector_x = 0;
+double vector_y = 0;
 //
 gps_transform gps;
+//autopilot ap(gps);
 
 
 using namespace std;
@@ -69,6 +70,17 @@ void gps_pos_cb(const sensor_msgs::NavSatFix::ConstPtr& msg) {
 	double enu_msg[3];
 	gps.get_ENU(enu_msg);
 	*/	
+}
+
+void tf_Callback(const tf2_msgs::TFMessage::ConstPtr &msg){
+	vector_x = msg->transforms.back().transform.translation.x;
+	vector_y = msg->transforms.back().transform.translation.y;
+	//double vectorz =  msg->transforms.back().transform.translation.z;
+	//std::cout << "Vector Z is :" << msg->transforms.back().transform.translation.z << '\n'; // z dont need  to show
+	
+	//ap.apriltag_update(vector_x,vector_y);
+	//ap.detection_and_move(vector_x,vector_y);
+
 }
 
 void follow(double* desired , double* recent, geometry_msgs::TwistStamped* vs, float dis_x, float dis_y)
@@ -154,6 +166,7 @@ int main(int argc, char **argv)
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>
                                 ("/mavros/state", 10, state_cb);
     ros::Subscriber gps_sub = nh.subscribe<sensor_msgs::NavSatFix>("/mavros/global_position/global", 10, gps_pos_cb);	//gps position
+	ros::Subscriber sub = nh.subscribe("tf", 1000, tf_Callback);//callback tf topic
 
 //Publisher
 	ros::Publisher local_vel_pub = nh.advertise<geometry_msgs::TwistStamped>("/mavros/setpoint_velocity/cmd_vel", 10);
@@ -201,11 +214,21 @@ int main(int argc, char **argv)
 		ros::spinOnce();
         rate.sleep();
     }
-    autopilot ap(gps);
-	ap.add_waypoint(24.7866518,120.9930521,80.9195742537);	//lat long alt
-	ap.add_waypoint(24.786642,120.9931584,80.9044255018);
-	ap.add_waypoint(24.7867009,120.9931797,80.9751696513);
-	ap.add_waypoint(24.7867117,120.9930547,80.5301738055);
+    	autopilot ap(gps);
+	//ap.add_waypoint(47.3977545,8.5457408,535.5597166987343);
+	//ap.add_waypoint(47.3978816,8.5459172,535.8185302211843);
+	/*ap.add_waypoint(24.7854493,120.9963335,135.389161427);
+	ap.add_waypoint(24.7852375,120.9963214,135.257564707);
+	ap.add_waypoint(24.7852195,120.9965416,135.099310392);
+	ap.add_waypoint(24.7854792,120.9965858,133.808804986);*/
+	ap.add_waypoint(24.7855152,120.9964698,150.44169889);
+	ap.add_waypoint(24.7853801,120.9965684,150.33637547);
+	ap.add_waypoint(24.7854674,120.9966012,150.548001302);
+	
+	//ap.add_waypoint(24.7866985,120.9931734,107.21514009);
+	//ap.add_waypoint(24.786802,120.9930468,106.896483178);
+	//ap.add_waypoint(24.7866371,120.993072,107.271823743);
+	
 	ap.show_waypoints();
 	char check;
 	cout <<"start to fly?[y\\n]";
@@ -237,6 +260,7 @@ int main(int argc, char **argv)
 		double now_pos[3];
 		gps.get_ENU(now_pos);
 		ap.update(now_pos);
+		ap.apriltag_update(vector_x,vector_y);
 		if(ap.get_state() == autopilot_state::not_flying){
 			vs.twist.linear.x = 0;
 			vs.twist.linear.y = 0;

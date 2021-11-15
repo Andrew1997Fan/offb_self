@@ -16,6 +16,7 @@ class gps_transform{
 		void get_ENU(double*);
 		void get_home_ECEF(double*);
 		bool is_init();	
+		
 	private:
 		bool init_flag = false;
 		double sin_lambda;

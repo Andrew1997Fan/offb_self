@@ -53,7 +53,7 @@ void autopilot::update(double *recent_pose){
 
 		this->gps.update(lat,lon,alt);
 		this->gps.get_ENU(target_now);
-		target_now[2] = 3;
+		target_now[2] = 6;
 		
 		
 		if(is_arrived_xy() == true){
@@ -154,13 +154,31 @@ void autopilot::show_waypoints(){
 void  autopilot::takeoff(){
 	target_now[0] = pose_start[0];
 	target_now[1] = pose_start[1];
-	target_now[2] = 3;
+	target_now[2] = 6;
 }
 
 // Apriltags
 void autopilot::detection_and_move(double vector_x,double vector_y){
 	double camera_err_x = vector_x; // ENU to Camera different coordinate
 	double camera_err_y = vector_y;
+	
+	
+	if(camera_err_x != 0 && camera_err_y != 0){
+		for(int i=0;i<150;i++){ //for update target_now in closed loop
+			std::cout << "count:" << i <<std::endl;
+			target_now[0] = pose_now[0] + camera_err_x;
+			target_now[1] = pose_now[1] + camera_err_y;
+			std::cout << "target_now[0]:" << target_now[0] << std::endl;
+			std::cout << "target_now[1]:" << target_now[1] << std::endl;
+			std::cout << "cam_err_x:" << camera_err_x << std::endl;
+			std::cout << "cam_err_y:" << camera_err_y << std::endl;
+		}	
+		if(abs(target_now[0]-pose_now[0]) <= 0.05 && abs(target_now[1]-pose_now[1]) <= 0.05){
+			state = autopilot_state::apriltag;
+		}
+	}
+	
+	/*
 	std::cout << "cam_err_x:" << camera_err_x << std::endl;
 	std::cout << "cam_err_y:" << camera_err_y << std::endl;
 	target_now[0] = pose_now[0] + camera_err_x;
@@ -169,6 +187,7 @@ void autopilot::detection_and_move(double vector_x,double vector_y){
 	std::cout << "target_now[1]:" << target_now[1] << std::endl;
 	state = autopilot_state::apriltag;
 	ROS_INFO("detection mission complete");
+	*/
 }
 /*void autopilot::apriltag(double vector_x,double vector_y){
 	if(fabs(vector_x) < 0.01 && fabs(vector_y) < 0.01  ){//if ENU transorm is accurate it should go to land

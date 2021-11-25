@@ -162,18 +162,19 @@ void autopilot::detection_and_move(double vector_x,double vector_y){
 	
 	
 	if(camera_err_x != 0 && camera_err_y != 0){
-		for(int i=0;i<150;i++){ //for update target_now in closed loop
-			std::cout << "count:" << i <<std::endl;
+		while(state = autopilot_state::detection_and_move){ //for update target_now in closed loop
 			target_now[0] = pose_now[0] + camera_err_x;
 			target_now[1] = pose_now[1] + camera_err_y;
 			std::cout << "target_now[0]:" << target_now[0] << std::endl;
 			std::cout << "target_now[1]:" << target_now[1] << std::endl;
 			std::cout << "cam_err_x:" << camera_err_x << std::endl;
 			std::cout << "cam_err_y:" << camera_err_y << std::endl;
+			if(abs(target_now[0]-pose_now[0]) <= 0.15 && abs(target_now[1]-pose_now[1]) <= 0.15){
+				state = autopilot_state::apriltag;
+				std::cout << "test loop" << std::endl;
+			}
 		}	
-		if(abs(target_now[0]-pose_now[0]) <= 0.05 && abs(target_now[1]-pose_now[1]) <= 0.05){
-			state = autopilot_state::apriltag;
-		}
+		
 	}
 	
 	/*

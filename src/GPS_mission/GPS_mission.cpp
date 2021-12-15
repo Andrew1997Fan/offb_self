@@ -215,8 +215,8 @@ int main(int argc, char **argv)
         rate.sleep();
     }
     	autopilot ap(gps);
-	//ap.add_waypoint(47.3977545,8.5457408,535.5597166987343);
-	//ap.add_waypoint(47.3978816,8.5459172,535.8185302211843);
+	ap.add_waypoint(47.3977545,8.5457408,535.5597166987343);
+	ap.add_waypoint(47.3978816,8.5459172,535.8185302211843);
 	/*ap.add_waypoint(24.7854493,120.9963335,135.389161427);
 	ap.add_waypoint(24.7852375,120.9963214,135.257564707);
 	ap.add_waypoint(24.7852195,120.9965416,135.099310392);
@@ -228,7 +228,7 @@ int main(int argc, char **argv)
 	//start love
 	//ap.add_waypoint(24.7976974,120.9825055,68.0198033288);
 	//final love
-	ap.add_waypoint(24.7866555,120.9931104,113.287977551);
+	//ap.add_waypoint(24.7866555,120.9931104,113.287977551);
 	//apriltag mid point
 	//ap.add_waypoint(24.7977356,120.9826333,68.6994798982);
 

@@ -64,10 +64,8 @@ void autopilot::update(double *recent_pose){
 				state = autopilot_state::detection_and_move;
 				if(get_state() == autopilot_state::detection_and_move){
 					detection_and_move(this->vector_x,this->vector_y);
-
 					}
 				}
-
 			}
 		}
 	
@@ -159,19 +157,30 @@ void  autopilot::takeoff(){
 void autopilot::detection_and_move(double vector_x,double vector_y){
 	double camera_err_x = vector_x; // ENU to Camera different coordinate
 	double camera_err_y = vector_y;
-	
-	
-	if(camera_err_x != 0 && camera_err_y != 0){
+	std::cout << "in detection_and_move state" << std::endl;
+	if(camera_err_x == NULL && camera_err_y == NULL){ //bug 
+		std::cout << "in if state" << std::endl;
 		while(state = autopilot_state::detection_and_move){ //for update target_now in closed loop
+			std::cout << "in while loop" << std::endl;
 			target_now[0] = pose_now[0] + camera_err_x;
 			target_now[1] = pose_now[1] + camera_err_y;
 			std::cout << "target_now[0]:" << target_now[0] << std::endl;
 			std::cout << "target_now[1]:" << target_now[1] << std::endl;
 			std::cout << "cam_err_x:" << camera_err_x << std::endl;
 			std::cout << "cam_err_y:" << camera_err_y << std::endl;
-			if(abs(target_now[0]-pose_now[0]) <= 0.15 && abs(target_now[1]-pose_now[1]) <= 0.15){
+
+			/*if(abs(target_now[0]-pose_now[0]) <= 0.15 && abs(target_now[1]-pose_now[1]) <= 0.15){
 				state = autopilot_state::apriltag;
-				std::cout << "test loop" << std::endl;
+				std::cout << "break the while loop" << std::endl;
+				break;
+			}
+			else{
+				continue;
+			}*/
+			if(abs(target_now[0]-pose_now[0]) == NULL && abs(target_now[1]-pose_now[1]) == NULL){
+				state = autopilot_state::apriltag;
+				std::cout << "break the while loop" << std::endl;
+				break;
 			}
 		}	
 		

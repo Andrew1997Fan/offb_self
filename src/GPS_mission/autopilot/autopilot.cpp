@@ -185,8 +185,8 @@ void autopilot::detection_and_move(double vector_x,double vector_y){
 
 				if (abs(target_now[2] - 5) < 0.5){
 
-					target_now[0] = pose_now[0] - (this->vector_y+2);
-					target_now[1] = pose_now[1] - (this->vector_x+2);
+					target_now[0] = pose_now[0] - (this->vector_y);
+					target_now[1] = pose_now[1] - (this->vector_x);
 					std::cout << "pose_now[0]:" << pose_now[0] << std::endl;
 					std::cout << "pose_now[1]:" << pose_now[1] << std::endl;
 					std::cout << "target_now[0]:" << target_now[0] << std::endl;

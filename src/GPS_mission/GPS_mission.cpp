@@ -75,9 +75,8 @@ void gps_pos_cb(const sensor_msgs::NavSatFix::ConstPtr& msg) {
 void tf_Callback(const tf2_msgs::TFMessage::ConstPtr &msg){
 	vector_x = msg->transforms.back().transform.translation.x;
 	vector_y = msg->transforms.back().transform.translation.y;
-	//double vectorz =  msg->transforms.back().transform.translation.z;
-	//std::cout << "Vector Z is :" << msg->transforms.back().transform.translation.z << '\n'; // z dont need  to show
-	
+	//std::cout << "vector_x :" << vector_x << std::endl;
+	//std::cout << "vector_y :" << vector_y << std::endl;
 	//ap.apriltag_update(vector_x,vector_y);
 	//ap.detection_and_move(vector_x,vector_y);
 
@@ -214,7 +213,8 @@ int main(int argc, char **argv)
 		ros::spinOnce();
         rate.sleep();
     }
-    	autopilot ap(gps);
+    autopilot ap(gps);
+	ap.add_waypoint(47.397745,8.5455939,537.685428648);
 	//ap.add_waypoint(24.7866673,120.9931711,106.093341741);
 	ap.show_waypoints();
 	char check;

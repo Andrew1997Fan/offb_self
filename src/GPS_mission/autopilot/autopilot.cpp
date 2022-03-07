@@ -30,6 +30,7 @@ void autopilot::update(double *recent_pose){
 	pose_now[0] = recent_pose[0];
 	pose_now[1] = recent_pose[1];
 	pose_now[2] = recent_pose[2];
+
 	if (get_state() == autopilot_state::pose){
 	}
 	if (get_state() == autopilot_state::takeoff){
@@ -53,9 +54,9 @@ void autopilot::update(double *recent_pose){
 
 		this->gps.update(lat,lon,alt);
 		this->gps.get_ENU(target_now);
-		target_now[2] = 6;
-		
-		
+		target_now[2] = 3;
+		std::cout << "target_now[0]:" << target_now[0] << std::endl;
+		std::cout << "target_now[1]:" << target_now[1] << std::endl;
 		if(is_arrived_xy() == true){
 			waypoint_num ++;
 			if(waypoint_num != waypoints.size()){
@@ -64,22 +65,23 @@ void autopilot::update(double *recent_pose){
 			else{
 				ROS_INFO("all waypoints reached");
 				state = autopilot_state::detection_and_move;
-				if(get_state() == autopilot_state::detection_and_move){
-					detection_and_move(this->vector_x,this->vector_y);
-				}
 			}
 
 		}
 	}
-	
-	if (get_state() == autopilot_state::apriltag){
-		if(is_arrived_xy() == true){
-		ROS_INFO("Arrived the place of apriltag");
-		state = autopilot_state::land;
-		}
+	else if(get_state() == autopilot_state::detection_and_move){
+		detection_and_move(this->vector_x,this->vector_y);
 	}
 	
-
+	if (get_state() == autopilot_state::apriltag){
+		ROS_INFO("Arrived the place of apriltag");
+		state = autopilot_state::land;
+		/*if(is_arrived_xy() == true){
+		ROS_INFO("Arrived the place of apriltag");
+		state = autopilot_state::land;
+		}*/
+	}
+	
 	if (get_state() == autopilot_state::land){
 		land();
 		ROS_INFO_ONCE("start landing");
@@ -153,59 +155,104 @@ void autopilot::show_waypoints(){
 void  autopilot::takeoff(){
 	target_now[0] = pose_start[0];
 	target_now[1] = pose_start[1];
-	target_now[2] = 6;
+	target_now[2] = 3;
 }
 
 // Apriltags
 void autopilot::detection_and_move(double vector_x,double vector_y){
-	double camera_err_x = vector_x; // ENU to Camera different coordinate
-	double camera_err_y = vector_y;
-	std::cout<<"in detection_and_move state"<<std::endl;
-	if(camera_err_x != 0 && camera_err_y != 0){
-		std::cout<<"in if state"<<std::endl;
-		while(state = autopilot_state::detection_and_move){ //for update target_now in closed loop
-			target_now[0] = pose_now[0] + camera_err_x;
-			target_now[1] = pose_now[1] + camera_err_y;
+	//double camera_err_x = vector_x;  //if give camera_err_x will stuck
+	//double camera_err_y = vector_y;
+
+		std::cout<<"in detection_and_move state"<<std::endl;
+
+		/*if(this->vector_x == NULL && this->vector_y == NULL){
+			this->vector_x = 0;
+			this->vector_y = 0;
+			target_now[0] = pose_now[0] ;
+			target_now[1] = pose_now[1] ;
 			std::cout << "target_now[0]:" << target_now[0] << std::endl;
 			std::cout << "target_now[1]:" << target_now[1] << std::endl;
-			std::cout << "cam_err_x:" << camera_err_x << std::endl;
-			std::cout << "cam_err_y:" << camera_err_y << std::endl;
-			if(abs(target_now[0]-pose_now[0]) <= 0.2 && abs(target_now[1]-pose_now[1]) <= 0.2){
+			std::cout << "cam_err_x:" << this->vector_x << std::endl;
+			std::cout << "cam_err_y:" << this->vector_y << std::endl;
+			if(is_arrived_xy() == true){
+				ROS_INFO("finish detection state");
 				state = autopilot_state::apriltag;
-				std::cout<<"break the while loop"<<std::endl;
-				break;
 			}
-		}	
+		}*/
+		if(this->vector_x != 0 && this->vector_y != 0){
+
+				// elevate
+
+				if (abs(target_now[2] - 5) < 0.5){
+
+					target_now[0] = pose_now[0] - (this->vector_y+2);
+					target_now[1] = pose_now[1] - (this->vector_x+2);
+					std::cout << "pose_now[0]:" << pose_now[0] << std::endl;
+					std::cout << "pose_now[1]:" << pose_now[1] << std::endl;
+					std::cout << "target_now[0]:" << target_now[0] << std::endl;
+					std::cout << "target_now[1]:" << target_now[1] << std::endl;
+					std::cout << "cam_err_x:" << this->vector_x << std::endl;
+					std::cout << "cam_err_y:" << this->vector_y << std::endl;
+				
+					// camera calibration
+					double x_dis = this->vector_x ;
+					double y_dis = this->vector_y ;
+					double norm = sqrt((x_dis)*(x_dis)+(y_dis)*(y_dis));
+					std::cout << "norm:" << norm << std::endl;
+
+					if(norm<2.5 && norm>2.1){
+						ROS_INFO("finish detection state");
+						target_now[0] = pose_now[0];
+						target_now[1] = pose_now[1];
+						target_now[2] = 4;
+						state = autopilot_state::apriltag;
+					}
+				}else{
+
+					target_now[0] = pose_now[0];
+					target_now[1] = pose_now[1];
+					target_now[2] = 5;
+				}
+				
+				
+				/*else if(this->vector_x > 1.5 && this->vector_y > 1.5){
+					target_now[0] = pose_now[0] - 0.1 ;
+					target_now[1] = pose_now[1] - 0.1 ;
+					std::cout << "err quadrant: + +"  << std::endl;
+				}
+				else if(this->vector_x < -1.5 && this->vector_y < -1.5){
+					target_now[0] = pose_now[0] + 0.1 ;
+					target_now[1] = pose_now[1] + 0.1 ;
+					std::cout << "err quadrant: - - "  << std::endl;
+
+				}
+				else if(this->vector_x > 1.5 && this->vector_y < -1.5){
+					target_now[0] = pose_now[0] - 0.1 ;
+					target_now[1] = pose_now[1] + 0.1 ;
+					std::cout << "err quadrant: + -"  << std::endl;
+
+				}
+				else if(this->vector_x < -1.5 && this->vector_y > 1.5){
+					target_now[0] = pose_now[0] + 0.1 ;
+					target_now[1] = pose_now[1] - 0.1 ;
+					std::cout << "err quadrant: - +"  << std::endl;
+				
+				}*/
+
+		}
+		else{
+			std::cout << "camera got nothing" <<std::endl;
+			//state = autopilot_state::apriltag;
+		}
 		
-	}
-	else{
-		std::cout << "get nothing " <<std::endl;
-		state = autopilot_state::apriltag;
-	}
-	
-	/*
-	std::cout << "cam_err_x:" << camera_err_x << std::endl;
-	std::cout << "cam_err_y:" << camera_err_y << std::endl;
-	target_now[0] = pose_now[0] + camera_err_x;
-	target_now[1] = pose_now[1] + camera_err_y;
-	std::cout << "target_now[0]:" << target_now[0] << std::endl;
-	std::cout << "target_now[1]:" << target_now[1] << std::endl;
-	state = autopilot_state::apriltag;
-	ROS_INFO("detection mission complete");
-	*/
 }
-/*void autopilot::apriltag(double vector_x,double vector_y){
-	if(fabs(vector_x) < 0.01 && fabs(vector_y) < 0.01  ){//if ENU transorm is accurate it should go to land
-		ROS_INFO("drone is aboved  apriltag ready to land");
-		state = autopilot_state::land;
-	}
-}*/
 
 void autopilot::land(){
 	target_now[0] = pose_now[0];
 	target_now[1] = pose_now[1];
 	target_now[2] = 0;
 }
+
 
 bool autopilot::is_arrived_xy(){
 	if(abs(target_now[0]-pose_now[0])<error && abs(target_now[1]-pose_now[1])<error){

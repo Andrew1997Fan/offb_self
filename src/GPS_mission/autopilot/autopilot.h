@@ -22,7 +22,7 @@ class autopilot{
 		void show_waypoints();
 		
 		void takeoff();
-		void land();
+		void land(double vector_x,double vector_y);
 		void mission_start();
 		void mission_stop();
 		//Apriltags

@@ -76,14 +76,10 @@ void autopilot::update(double *recent_pose){
 	if (get_state() == autopilot_state::apriltag){
 		ROS_INFO("Arrived the place of apriltag");
 		state = autopilot_state::land;
-		/*if(is_arrived_xy() == true){
-		ROS_INFO("Arrived the place of apriltag");
-		state = autopilot_state::land;
-		}*/
 	}
 	
 	if (get_state() == autopilot_state::land){
-		land();
+		land(this->vector_x,this->vector_y);
 		ROS_INFO_ONCE("start landing");
 		if(is_arrived_z() == true){
 			land_ok = true;
@@ -183,10 +179,10 @@ void autopilot::detection_and_move(double vector_x,double vector_y){
 
 				// elevate
 
-				if (abs(target_now[2] - 5) < 0.5){
+				if (abs(target_now[2] - 3) < 0.5){
 
-					target_now[0] = pose_now[0] - (this->vector_y);
-					target_now[1] = pose_now[1] - (this->vector_x);
+					target_now[0] = pose_now[0] + (this->vector_x);
+					target_now[1] = pose_now[1] + (this->vector_y);
 					std::cout << "pose_now[0]:" << pose_now[0] << std::endl;
 					std::cout << "pose_now[1]:" << pose_now[1] << std::endl;
 					std::cout << "target_now[0]:" << target_now[0] << std::endl;
@@ -200,18 +196,19 @@ void autopilot::detection_and_move(double vector_x,double vector_y){
 					double norm = sqrt((x_dis)*(x_dis)+(y_dis)*(y_dis));
 					std::cout << "norm:" << norm << std::endl;
 
-					if(norm<2.5 && norm>2.1){
+					if(norm<1.5){
 						ROS_INFO("finish detection state");
 						target_now[0] = pose_now[0];
 						target_now[1] = pose_now[1];
-						target_now[2] = 4;
+						target_now[2] = 5;
 						state = autopilot_state::apriltag;
+						
 					}
 				}else{
 
 					target_now[0] = pose_now[0];
 					target_now[1] = pose_now[1];
-					target_now[2] = 5;
+					target_now[2] = 3;
 				}
 				
 				
@@ -237,7 +234,7 @@ void autopilot::detection_and_move(double vector_x,double vector_y){
 					target_now[1] = pose_now[1] - 0.1 ;
 					std::cout << "err quadrant: - +"  << std::endl;
 				
-				}*/
+				}*/	
 
 		}
 		else{
@@ -247,10 +244,18 @@ void autopilot::detection_and_move(double vector_x,double vector_y){
 		
 }
 
-void autopilot::land(){
-	target_now[0] = pose_now[0];
-	target_now[1] = pose_now[1];
-	target_now[2] = 0;
+// adding apriltag info into landing state
+void autopilot::land(double vector_x,double vector_y){
+
+	if(this->vector_y <= 0.5 && this->vector_x <= 0.5){
+		target_now[0] = pose_now[0];
+		target_now[1] = pose_now[1];
+		target_now[2] = pose_now[2] - 0.5;
+	}
+	else{
+		target_now[0] = pose_now[0] + (this->vector_x);
+		target_now[1] = pose_now[1] + (this->vector_y);
+	}
 }
 
 

@@ -20,10 +20,10 @@
 
 #define XY_VEL_MAX 0.5
 //gain
-#define KPx 5.0f//1   3
-#define KPy 5.0f//1   3
-#define KPz 1.0f//
-#define KProll 1.0f//1  2
+#define KPx 0.2f//1   3
+#define KPy 0.2f//1   3
+#define KPz 0.2f//
+#define KProll 0.2f//1  2
 
 bool init=0;
 double vector_x = 0;

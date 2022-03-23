@@ -11,7 +11,7 @@
 
 #define error 0.1
 
-
+double norm;
 
 autopilot::autopilot(gps_transform gps){
 	this->gps = gps;
@@ -156,33 +156,14 @@ void  autopilot::takeoff(){
 
 // Apriltags
 void autopilot::detection_and_move(double vector_x,double vector_y){
-	//double camera_err_x = vector_x;  //if give camera_err_x will stuck
-	//double camera_err_y = vector_y;
 
 		std::cout<<"in detection_and_move state"<<std::endl;
-
-		/*if(this->vector_x == NULL && this->vector_y == NULL){
-			this->vector_x = 0;
-			this->vector_y = 0;
-			target_now[0] = pose_now[0] ;
-			target_now[1] = pose_now[1] ;
-			std::cout << "target_now[0]:" << target_now[0] << std::endl;
-			std::cout << "target_now[1]:" << target_now[1] << std::endl;
-			std::cout << "cam_err_x:" << this->vector_x << std::endl;
-			std::cout << "cam_err_y:" << this->vector_y << std::endl;
-			if(is_arrived_xy() == true){
-				ROS_INFO("finish detection state");
-				state = autopilot_state::apriltag;
-			}
-		}*/
 		if(this->vector_x != 0 && this->vector_y != 0){
 
-				// elevate
+				if (abs(target_now[2]-3)<0.5){
 
-				if (abs(target_now[2] - 3) < 0.5){
-
-					target_now[0] = pose_now[0] + (this->vector_x);
-					target_now[1] = pose_now[1] + (this->vector_y);
+					target_now[0] = pose_now[0] - (this->vector_y+1.4);
+					target_now[1] = pose_now[1] - (this->vector_x+1.8);
 					std::cout << "pose_now[0]:" << pose_now[0] << std::endl;
 					std::cout << "pose_now[1]:" << pose_now[1] << std::endl;
 					std::cout << "target_now[0]:" << target_now[0] << std::endl;
@@ -190,51 +171,28 @@ void autopilot::detection_and_move(double vector_x,double vector_y){
 					std::cout << "cam_err_x:" << this->vector_x << std::endl;
 					std::cout << "cam_err_y:" << this->vector_y << std::endl;
 				
-					// camera calibration
-					double x_dis = this->vector_x ;
-					double y_dis = this->vector_y ;
-					double norm = sqrt((x_dis)*(x_dis)+(y_dis)*(y_dis));
-					std::cout << "norm:" << norm << std::endl;
+					// camera for px4_camera calibration
+					double x_dis = this->vector_x + 1.8 ;
+					double y_dis = this->vector_y + 1.4 ;
+					norm = sqrt((x_dis)*(x_dis)+(y_dis)*(y_dis));
+					std::cout << "norm :" << norm << std::endl;
 
-					if(norm<1.5){
-						ROS_INFO("finish detection state");
+					if(norm<0.4){
+						ROS_INFO("above apriltag");
 						target_now[0] = pose_now[0];
 						target_now[1] = pose_now[1];
-						target_now[2] = 5;
+						std::cout << "height:" << target_now[2] << std::endl;
 						state = autopilot_state::apriltag;
-						
 					}
 				}else{
-
+					ROS_INFO("camera got nothing");
 					target_now[0] = pose_now[0];
 					target_now[1] = pose_now[1];
 					target_now[2] = 3;
 				}
 				
 				
-				/*else if(this->vector_x > 1.5 && this->vector_y > 1.5){
-					target_now[0] = pose_now[0] - 0.1 ;
-					target_now[1] = pose_now[1] - 0.1 ;
-					std::cout << "err quadrant: + +"  << std::endl;
-				}
-				else if(this->vector_x < -1.5 && this->vector_y < -1.5){
-					target_now[0] = pose_now[0] + 0.1 ;
-					target_now[1] = pose_now[1] + 0.1 ;
-					std::cout << "err quadrant: - - "  << std::endl;
 
-				}
-				else if(this->vector_x > 1.5 && this->vector_y < -1.5){
-					target_now[0] = pose_now[0] - 0.1 ;
-					target_now[1] = pose_now[1] + 0.1 ;
-					std::cout << "err quadrant: + -"  << std::endl;
-
-				}
-				else if(this->vector_x < -1.5 && this->vector_y > 1.5){
-					target_now[0] = pose_now[0] + 0.1 ;
-					target_now[1] = pose_now[1] - 0.1 ;
-					std::cout << "err quadrant: - +"  << std::endl;
-				
-				}*/	
 
 		}
 		else{
@@ -247,15 +205,35 @@ void autopilot::detection_and_move(double vector_x,double vector_y){
 // adding apriltag info into landing state
 void autopilot::land(double vector_x,double vector_y){
 
-	if(this->vector_y <= 0.5 && this->vector_x <= 0.5){
-		target_now[0] = pose_now[0];
-		target_now[1] = pose_now[1];
-		target_now[2] = pose_now[2] - 0.5;
+	if(this->vector_x <= -1.3 && this->vector_y <= -0.9){
+		
+		if(norm<0.18){
+			ROS_INFO("start to land");		
+			target_now[2] = pose_now[2] - 0.2;
+			std::cout << "norm : " << norm << std::endl;
+			std::cout << "height_now[2]:" << pose_now[2] << std::endl;
+			std::cout << "target_height_now[2]:" << target_now[2] << std::endl;
+			
+		}
+		else{
+			ROS_INFO("land with compensating xy");
+			double x_dis = this->vector_x + 1.8 ;
+			double y_dis = this->vector_y + 1.4 ;
+			norm = sqrt((x_dis)*(x_dis)+(y_dis)*(y_dis));
+
+			target_now[0] = pose_now[0] - (this->vector_y+1.4);
+			target_now[1] = pose_now[1] - (this->vector_x+1.8);
+			target_now[2] = pose_now[2] - 0.2;
+			
+
+			std::cout << "height_now[2]:" << pose_now[2] << std::endl;
+			std::cout << "target_height_now[2]:" << target_now[2] << std::endl;
+			std::cout << "norm : " << norm << std::endl;
+
+		}
+
 	}
-	else{
-		target_now[0] = pose_now[0] + (this->vector_x);
-		target_now[1] = pose_now[1] + (this->vector_y);
-	}
+
 }
 
 
@@ -267,7 +245,7 @@ bool autopilot::is_arrived_xy(){
 	}
 }
 bool autopilot::is_arrived_z(){
-	if(abs(target_now[2]-pose_now[2])<error){
+	if(target_now[2]-pose_now[2]<error){
 		return true;
 	}else{
 		return false;

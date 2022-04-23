@@ -13,7 +13,7 @@ class autopilot{
 		autopilot(gps_transform gps);
 		
 		void update(double *recent_pose);
-		void apriltag_update(double vector_x,double vector_y);
+		void apriltag_update(double vector_x,double vector_y,double vector_z,double q_x,double q_y, double q_z, double q_w);
 		//add waypoint by different datatype
 		void add_waypoint(sensor_msgs::NavSatFix);
 		void add_waypoint(double*);
@@ -26,8 +26,8 @@ class autopilot{
 		void mission_start();
 		void mission_stop();
 		//Apriltags
-		void apriltag(double vector_x,double vector_y);
-		void detection_and_move(double vector_x,double vector_y);
+		void apriltag(double vector_x,double vector_y,double vector_z,double q_x,double q_y, double q_z, double q_w);
+		void detection_and_move(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w);
 
 
 		bool is_arrived_xy();
@@ -42,9 +42,13 @@ class autopilot{
 		autopilot_state state;
 		int waypoint_num = 0;	
 
-		double vector_x,vector_y;
+		double vector_x,vector_y,vector_z;
 //		double camera_err_x,camera_err_y;
-		
+
+		//Quaternion rotation
+		//double R11,R12,R13,R21,R22,R23,R31,R32,R33;
+		double q_x,q_y,q_z,q_w;
+
 		double target_now[3];
 		double pose_now[3];
 		double pose_start[3];

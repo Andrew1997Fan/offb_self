@@ -14,6 +14,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <math.h>
+//#include <Eigen/Dense>
 
 #include "gps_transform.h"
 #include "autopilot.h"
@@ -28,6 +29,11 @@
 bool init=0;
 double vector_x = 0;
 double vector_y = 0;
+double vector_z = 0;
+double q_x = 0;
+double q_y = 0;
+double q_z = 0;
+double q_w = 0;
 //
 gps_transform gps;
 //autopilot ap(gps);
@@ -75,6 +81,13 @@ void gps_pos_cb(const sensor_msgs::NavSatFix::ConstPtr& msg) {
 void tf_Callback(const tf2_msgs::TFMessage::ConstPtr &msg){
 	vector_x = msg->transforms.back().transform.translation.x;
 	vector_y = msg->transforms.back().transform.translation.y;
+	vector_z = msg->transforms.back().transform.translation.z;
+	q_x = msg->transforms.back().transform.rotation.x;
+	q_y = msg->transforms.back().transform.rotation.y;
+	q_z = msg->transforms.back().transform.rotation.z;
+	q_w = msg->transforms.back().transform.rotation.w;
+	std::cout << "quaternoin_x :" << q_x << std::endl;
+	std::cout << "quaternoin_w :" << q_w << std::endl;
 	//std::cout << "vector_x :" << vector_x << std::endl;
 	//std::cout << "vector_y :" << vector_y << std::endl;
 	//ap.apriltag_update(vector_x,vector_y);
@@ -247,7 +260,9 @@ int main(int argc, char **argv)
 		double now_pos[3];
 		gps.get_ENU(now_pos);
 		ap.update(now_pos);
-		ap.apriltag_update(vector_x,vector_y);
+		ap.apriltag_update(vector_x,vector_y,vector_z,q_x,q_y,q_z,q_w);
+		
+
 		if(ap.get_state() == autopilot_state::not_flying){
 			vs.twist.linear.x = 0;
 			vs.twist.linear.y = 0;

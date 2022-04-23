@@ -13,7 +13,7 @@ find_package(
   std_msgs
   tf
   )
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(Eigen3 REQUIRED)
 find_package(message_generation)
 #set(apriltags2_ros_DIR /home/ncrl/svo_install_overlay_ws/src)
 ## System dependencies are found with CMake's conventions
@@ -119,11 +119,10 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
- include
+# include
   ${catkin_INCLUDE_DIRS}
-
 )
-
+include_directories(${EIGEN3_INCLUDE_DIRS})
 ## Declare a C++ library
 # add_library(offb_self
 #   src/formation_four.cpp

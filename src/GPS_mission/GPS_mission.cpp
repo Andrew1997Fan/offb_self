@@ -21,10 +21,10 @@
 
 #define XY_VEL_MAX 0.5
 //gain
-#define KPx 0.2f//1   3
-#define KPy 0.2f//1   3
-#define KPz 0.2f//
-#define KProll 0.2f//1  2
+#define KPx 0.5f//1   3
+#define KPy 0.5f//1   3
+#define KPz 0.5f//
+#define KProll 0.5f//1  2
 
 bool init=0;
 double vector_x = 0;
@@ -86,10 +86,7 @@ void tf_Callback(const tf2_msgs::TFMessage::ConstPtr &msg){
 	q_y = msg->transforms.back().transform.rotation.y;
 	q_z = msg->transforms.back().transform.rotation.z;
 	q_w = msg->transforms.back().transform.rotation.w;
-	std::cout << "quaternoin_x :" << q_x << std::endl;
-	std::cout << "quaternoin_w :" << q_w << std::endl;
-	//std::cout << "vector_x :" << vector_x << std::endl;
-	//std::cout << "vector_y :" << vector_y << std::endl;
+
 	//ap.apriltag_update(vector_x,vector_y);
 	//ap.detection_and_move(vector_x,vector_y);
 

@@ -13,7 +13,7 @@ class autopilot{
 		autopilot(gps_transform gps);
 		
 		void update(double *recent_pose);
-		void apriltag_update(double vector_x,double vector_y,double vector_z,double q_x,double q_y, double q_z, double q_w);
+		void apriltag_update(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w);
 		//add waypoint by different datatype
 		void add_waypoint(sensor_msgs::NavSatFix);
 		void add_waypoint(double*);
@@ -22,12 +22,12 @@ class autopilot{
 		void show_waypoints();
 		
 		void takeoff();
-		void land(double vector_x,double vector_y);
+		void land(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_odometry_x,double q_odometry_y,double q_odometry_z,double q_odometry_w,double odometry_x,double odometry_y, double odometry_z);
 		void mission_start();
 		void mission_stop();
 		//Apriltags
-		void apriltag(double vector_x,double vector_y,double vector_z,double q_x,double q_y, double q_z, double q_w);
-		void detection_and_move(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w);
+		void apriltag(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_odometry_x,double q_odometry_y,double q_odometry_z,double q_odometry_w,double odometry_x,double odometry_y, double odometry_z);
+		void detection_and_move(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_odometry_x,double q_odometry_y,double q_odometry_z,double q_odometry_w,double odometry_x,double odometry_y, double odometry_z);
 
 
 		bool is_arrived_xy();
@@ -48,10 +48,13 @@ class autopilot{
 		//Quaternion rotation
 		//double R11,R12,R13,R21,R22,R23,R31,R32,R33;
 		double q_x,q_y,q_z,q_w;
+		double q_odometry_x,q_odometry_y,q_odometry_z,q_odometry_w,odometry_x,odometry_y,odometry_z;
 
 		double target_now[3];
 		double pose_now[3];
 		double pose_start[3];
+		
+		double error_x,error_y;
 		
 		bool land_ok;
 		bool in_mission = false;

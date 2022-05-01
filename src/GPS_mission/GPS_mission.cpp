@@ -5,8 +5,10 @@
 #include <tf/transform_datatypes.h>
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
+#include <nav_msgs/Odometry.h>
 #include <mavros_msgs/State.h>
 #include <sensor_msgs/NavSatFix.h>
+#include <sensor_msgs/Imu.h>
 #include <mavros_msgs/CommandTOL.h>
 
 #include <cstdio>
@@ -21,10 +23,10 @@
 
 #define XY_VEL_MAX 0.5
 //gain
-#define KPx 0.5f//1   3
-#define KPy 0.5f//1   3
-#define KPz 0.5f//
-#define KProll 0.5f//1  2
+#define KPx 0.3f//1   3
+#define KPy 0.3f//1   3
+#define KPz 0.3f//
+#define KProll 0.3f//1  2
 
 bool init=0;
 double vector_x = 0;
@@ -34,6 +36,13 @@ double q_x = 0;
 double q_y = 0;
 double q_z = 0;
 double q_w = 0;
+double q_odometry_x = 0;
+double q_odometry_y = 0;
+double q_odometry_z = 0;
+double q_odometry_w = 0;
+double odometry_x = 0;
+double odometry_y = 0;
+double odometry_z = 0;
 //
 gps_transform gps;
 //autopilot ap(gps);
@@ -91,7 +100,20 @@ void tf_Callback(const tf2_msgs::TFMessage::ConstPtr &msg){
 	//ap.detection_and_move(vector_x,vector_y);
 
 }
+void odometry_cb(const nav_msgs::Odometry::ConstPtr &msg){
+	q_odometry_x = msg->pose.pose.orientation.x;
+	q_odometry_y = msg->pose.pose.orientation.y;
+	q_odometry_z = msg->pose.pose.orientation.z;
+	q_odometry_w = msg->pose.pose.orientation.w;
+	odometry_x = msg->pose.pose.position.x;
+	odometry_y = msg->pose.pose.position.y;
+	odometry_z = msg->pose.pose.position.z;
 
+	std::cout << "q_odometry_x :" << q_odometry_x << std::endl;
+	std::cout << "q_odometry_y :" << q_odometry_y << std::endl;
+	std::cout << "q_odometry_z :" << q_odometry_z << std::endl;
+	std::cout << "q_odometry_w :" << q_odometry_w << std::endl;
+}
 void follow(double* desired , double* recent, geometry_msgs::TwistStamped* vs, float dis_x, float dis_y)
 {
 	float err_x, err_y, err_z, err_roll;
@@ -175,6 +197,7 @@ int main(int argc, char **argv)
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>
                                 ("/mavros/state", 10, state_cb);
     ros::Subscriber gps_sub = nh.subscribe<sensor_msgs::NavSatFix>("/mavros/global_position/global", 10, gps_pos_cb);	//gps position
+	ros::Subscriber odometry_sub = nh.subscribe<nav_msgs::Odometry>("/mavros/Odometry/in", 10,odometry_cb );	//odometry orientation
 	ros::Subscriber sub = nh.subscribe("tf", 1000, tf_Callback);//callback tf topic
 
 //Publisher
@@ -224,7 +247,7 @@ int main(int argc, char **argv)
         rate.sleep();
     }
     autopilot ap(gps);
-	ap.add_waypoint(47.397745,8.5455939,537.685428648);
+	ap.add_waypoint(47.3977374,8.5456098,535.306891418);
 	//ap.add_waypoint(24.7866673,120.9931711,106.093341741);
 	ap.show_waypoints();
 	char check;

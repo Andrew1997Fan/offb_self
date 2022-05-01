@@ -12,6 +12,7 @@ find_package(
   roscpp
   std_msgs
   tf
+  nav_msgs
   )
 find_package(Eigen3 REQUIRED)
 find_package(message_generation)
@@ -74,6 +75,7 @@ find_package(message_generation)
 generate_messages(
    DEPENDENCIES
    std_msgs  # Or other packages containing msgs
+   nav_msgs
 )
 
 ################################################

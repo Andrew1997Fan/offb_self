@@ -247,7 +247,11 @@ int main(int argc, char **argv)
         rate.sleep();
     }
     autopilot ap(gps);
-	ap.add_waypoint(47.3977374,8.5456098,535.306891418);
+	//ap.add_waypoint(47.3977419,8.5455936,535.150915657); //gazebo(0,0,0)
+	//ap.add_waypoint(47.3977438,8.5456034,535.120903528);//gazebo(0.7,0.2,0)
+	ap.add_waypoint(47.397748,8.5456032,535.207905821);
+	//ap.add_waypoint(47.3977871,8.5455936,535.3093731);//gazebo(0,5,0)
+	//ap.add_waypoint(47.3977422,8.5456602,535.327822807);//gazebo(5,0,0,0)
 	//ap.add_waypoint(24.7866673,120.9931711,106.093341741);
 	ap.show_waypoints();
 	char check;

@@ -64,7 +64,7 @@ void autopilot::update(double *recent_pose){
 
 		this->gps.update(lat,lon,alt);
 		this->gps.get_ENU(target_now);
-		target_now[2] = 3;
+		target_now[2] = 2.5;
 
 		std::cout << "target_now[0]:" << target_now[0] << std::endl;
 		std::cout << "target_now[1]:" << target_now[1] << std::endl;
@@ -94,7 +94,7 @@ void autopilot::update(double *recent_pose){
 	if (get_state() == autopilot_state::land){
 		land(this->vector_x,this->vector_y,this->vector_z,this->q_x,this->q_y,this->q_z,this->q_w,this->q_odometry_x,this->q_odometry_y,this->q_odometry_z,this->q_odometry_w,this->odometry_x,this->odometry_y,this->odometry_z);
 		ROS_INFO_ONCE("start landing");
-		if(pose_now[2]<=0.15){ //something strange here why it can pass this one
+		if(pose_now[2]<=0.10){ //something strange here why it can pass this one
 			land_ok = true;
 			std::cout << "ready to disarm\n";
 			state = autopilot_state::not_flying;
@@ -164,7 +164,7 @@ void autopilot::show_waypoints(){
 void  autopilot::takeoff(){
 	target_now[0] = pose_start[0];
 	target_now[1] = pose_start[1];
-	target_now[2] = 3;
+	target_now[2] = 2.5;
 }
 
 // Apriltags
@@ -197,23 +197,26 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 					Eigen::Vector4d body_ENU;//Quadrotors pose_now
 					body_ENU << pose_now[0],pose_now[1],pose_now[2],1;
 					
-					// P_a in apriltag frame
-					Eigen::Vector3d apriltag_translation;
-					apriltag_translation << this->vector_x,this->vector_y,this->vector_z;
-					Eigen::Vector4d apriltag_tf;
-					apriltag_tf << this->vector_x,this->vector_y,this->vector_z,1;
+					// P_a in apriltag frame (manual adjust the frame but it might get wrong)
+					// Eigen::Vector3d apriltag_translation;
+					// apriltag_translation << this->vector_x,this->vector_y,pose_now[2];
+					// Eigen::Vector4d apriltag_tf;
+					// apriltag_tf << this->vector_x,this->vector_y,pose_now[2],1;
 
+					// fake apriltag
+					Eigen::Vector4d fake_apriltag_tf;
+					fake_apriltag_tf << 0.4,0.1,2.5,1;
 
-					//Quaternion to Rotation matrix (camera in apriltag frame so need a transformation matrix)
-					Eigen::Quaterniond apriltag2camera_quaternion(this->q_w,this->q_x,this->q_y,this->q_z);
-					Eigen::Matrix3d apriltag2camera_rotation_matrix;
-					apriltag2camera_rotation_matrix = apriltag2camera_quaternion.toRotationMatrix();
-					//Tc_a
-					Eigen::Matrix4d apriltag2camera_transformation_matrix;
-					apriltag2camera_transformation_matrix << apriltag2camera_rotation_matrix(0,0),apriltag2camera_rotation_matrix(0,1),apriltag2camera_rotation_matrix(0,2),vector_x,
-					 						 				 apriltag2camera_rotation_matrix(1,0),apriltag2camera_rotation_matrix(1,1),apriltag2camera_rotation_matrix(1,2),vector_y,
-					 						 				 apriltag2camera_rotation_matrix(2,0),apriltag2camera_rotation_matrix(2,1),apriltag2camera_rotation_matrix(2,2),vector_z,
-					 						                    				0,                   0,                   0,       1;
+					// //Quaternion to Rotation matrix (camera in apriltag frame so need a transformation matrix)
+					// Eigen::Quaterniond apriltag2camera_quaternion(this->q_w,this->q_x,this->q_y,this->q_z);
+					// Eigen::Matrix3d apriltag2camera_rotation_matrix;
+					// apriltag2camera_rotation_matrix = apriltag2camera_quaternion.toRotationMatrix();
+					// //Tc_a
+					// Eigen::Matrix4d apriltag2camera_transformation_matrix;
+					// apriltag2camera_transformation_matrix << apriltag2camera_rotation_matrix(0,0),apriltag2camera_rotation_matrix(0,1),apriltag2camera_rotation_matrix(0,2),apriltag_tf(0),
+					//  						 				 apriltag2camera_rotation_matrix(1,0),apriltag2camera_rotation_matrix(1,1),apriltag2camera_rotation_matrix(1,2),apriltag_tf(1),
+					//  						 				 apriltag2camera_rotation_matrix(2,0),apriltag2camera_rotation_matrix(2,1),apriltag2camera_rotation_matrix(2,2),pose_now[2],
+					//  						                    				0,                   0,                   0,       1;
 
 					// //Ta_c need to imply the transformation inverse policy
 					// Eigen::Matrix4d camera2apriltag_transformation_matrix;
@@ -224,32 +227,55 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 					// camera2apriltag_transformation_matrix = apriltag2camera_transformation_matrix;
 					
 
-					//assume camera and quadrotors aligned
-					//Tc_q
-					Eigen::Matrix4d camera2quadrotors_transformation_matrix;
-					camera2quadrotors_transformation_matrix <<  0, -1, 0,     0,
-																-1, 0, 0, -0.12,
-															    0,  0,-1, -0.12,
-																0,  0, 0,     1;
+					// //assume camera and quadrotors aligned
+					// //Tc_q
+					// Eigen::Matrix4d camera2quadrotors_transformation_matrix;
+					// camera2quadrotors_transformation_matrix <<  0, -1, 0,    0,
+					// 											-1, 0, 0, 0.12,
+					// 										    0,  0,-1, 0.12,
+					// 											0,  0, 0,    1;
 
+					//camera to IMU
+					Eigen::Matrix4d camera2IMU_transformation_matrix;//ignore camera imu hardware 
+					camera2IMU_transformation_matrix << 0, -1, 0, 0,
+														 -1, 0, 0,     0,
+														 0, 0,-1, 0,
+														 0, 0, 0,     1;
 
+					Eigen::Vector4d TC_IMU;
+					TC_IMU = camera2IMU_transformation_matrix*fake_apriltag_tf;
+					std::cout << "TC_IMU:" << TC_IMU << std::endl;
+
+					
 
 					//IMU quaternion (odometry = imu)
 					Eigen::Quaterniond odometry_quaternion(this->q_odometry_x,this->q_odometry_y,this->q_odometry_z,this->q_odometry_w);
 					Eigen::Matrix3d odometry_rotation_matrix;
 					odometry_rotation_matrix = odometry_quaternion.toRotationMatrix();
-					Eigen::Matrix4d Tq2w_transformation_matrix; //quadrotors to world frame (imu to world)
-					Tq2w_transformation_matrix << odometry_rotation_matrix(0,0),odometry_rotation_matrix(0,1),odometry_rotation_matrix(0,2),pose_now[1],
-												  odometry_rotation_matrix(1,0),odometry_rotation_matrix(1,1),odometry_rotation_matrix(1,2),pose_now[0], 
+					Eigen::Matrix4d Timu2w_transformation_matrix; //imu to world
+					Timu2w_transformation_matrix << odometry_rotation_matrix(0,0),odometry_rotation_matrix(0,1),odometry_rotation_matrix(0,2),pose_now[1],
+												  odometry_rotation_matrix(1,0),odometry_rotation_matrix(1,1),odometry_rotation_matrix(1,2),-pose_now[0], 
 												  odometry_rotation_matrix(2,0),odometry_rotation_matrix(2,1),odometry_rotation_matrix(2,2),pose_now[2],
 												                         0,                       0,                       0,          1;
 
-					
-					Eigen::Matrix4d quadrotors2imu_rotation_matrix;
-					quadrotors2imu_rotation_matrix << -1, 0, 0, 0,
-													   0,-1, 0, 0,
-													   0, 0,-1, 0,
-													   0, 0, 0, 1;
+					std::cout << "Timu2w" << Timu2w_transformation_matrix << std::endl;
+					// Eigen::Matrix4d quadrotors2imu_transformation_matrix;
+					// quadrotors2imu_transformation_matrix << -1, 0, 0, 0,
+					// 								   0,-1, 0, 0,
+					// 								   0, 0,-1, 0,
+					// 								   0, 0, 0, 1;
+
+					//IMU2world
+					Eigen::Vector4d Timu_w;
+					Timu_w = Timu2w_transformation_matrix*camera2IMU_transformation_matrix*fake_apriltag_tf;
+					std::cout <<"Timu_w :" << Timu_w << std::endl;
+
+
+					Eigen::Matrix4d w2w_new_transformation_matrix;
+					w2w_new_transformation_matrix << 0, -1, 0, 0,
+													1, 0, 0, 0,
+													 0, 0, 1, 0,
+													 0, 0, 0, 1;
 
 
 					//Rotation quadrotors to world frame R_q2w from numerical solution 
@@ -269,11 +295,11 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 					//apriltag pose_now in world frame
 					//quadrotors target_now 
 					Eigen::Vector4d apriltag_in_world;//target_now
-					apriltag_in_world = Tq2w_transformation_matrix * quadrotors2imu_rotation_matrix * camera2quadrotors_transformation_matrix * apriltag_tf;
+					apriltag_in_world = w2w_new_transformation_matrix*Timu2w_transformation_matrix * camera2IMU_transformation_matrix* fake_apriltag_tf;
 					// Pa_W = TI_W*TB_I*TC_B*Pa_C
 
 
-					std::cout << "apriltag_tf :" << apriltag_tf << std::endl;
+					std::cout << "apriltag_tf :" << fake_apriltag_tf << std::endl;
 					
 					//Quadrotors's pose in world frame
 					std::cout << "pose_now[0]:" << body_ENU(0) << std::endl;
@@ -313,7 +339,7 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 					//std::cout << "target_now[1]:" << target_now[1] << std::endl;
 					//if
 
-					if (norm<=2.0){
+					if (norm<=1.0){
 						ROS_INFO_ONCE("above apriltag and go on next state");
 						state = autopilot_state::apriltag;
 					}
@@ -368,6 +394,9 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 					// 	state = autopilot_state::apriltag;
 					// }
 				}
+				else{
+					std::cout << "not in the right altitude" << std::endl;
+				}
 				/*else{
 					ROS_INFO("q_x>0.99");
 					apriltag_ENU(0) = body_ENU(0) - (this->vector_y+1.2);
@@ -408,12 +437,12 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 
 // adding apriltag info into landing state
 void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_odometry_x,double q_odometry_y,double q_odometry_z,double q_odometry_w,double odometry_x,double odometry_y, double odometry_z){
-	std::cout << "in landing tate" <<std::endl;
+	std::cout << "in landing state" <<std::endl;
 	// double x_dis = this->vector_x + 1.7 ;
 	// double y_dis = this->vector_y + 1.2 ;
 	// norm = sqrt((x_dis)*(x_dis)+(y_dis)*(y_dis));
 
-	if(norm<1.5){ //abs(this->vector_x + 1.7) <= 0.3 && abs(this->vector_y + 1.2) <= 0.3
+	if(norm<0.5){ //abs(this->vector_x + 1.7) <= 0.3 && abs(this->vector_y + 1.2) <= 0.3
 		ROS_INFO("start to land");		
 		target_now[2] = 0;
 		std::cout << "norm : " << norm << std::endl;
@@ -428,7 +457,7 @@ void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,
 			
 		}*/
 	}
-	else if (norm>3.0)
+	else if (norm>1.5)
 	{
 		ROS_INFO("too far away from apriltag");
 		state = autopilot_state::detection_and_move;

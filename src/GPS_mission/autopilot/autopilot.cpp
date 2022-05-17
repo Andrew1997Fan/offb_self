@@ -205,7 +205,7 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 
 					// fake apriltag
 					Eigen::Vector4d fake_apriltag_tf;
-					fake_apriltag_tf << 0.4,0.1,2.5,1;
+					fake_apriltag_tf << this->vector_x,this->vector_y,this->vector_z,1;
 
 					// //Quaternion to Rotation matrix (camera in apriltag frame so need a transformation matrix)
 					// Eigen::Quaterniond apriltag2camera_quaternion(this->q_w,this->q_x,this->q_y,this->q_z);
@@ -339,7 +339,7 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 					//std::cout << "target_now[1]:" << target_now[1] << std::endl;
 					//if
 
-					if (norm<=1.0){
+					if (norm<=0.6){
 						ROS_INFO_ONCE("above apriltag and go on next state");
 						state = autopilot_state::apriltag;
 					}
@@ -442,7 +442,7 @@ void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,
 	// double y_dis = this->vector_y + 1.2 ;
 	// norm = sqrt((x_dis)*(x_dis)+(y_dis)*(y_dis));
 
-	if(norm<0.5){ //abs(this->vector_x + 1.7) <= 0.3 && abs(this->vector_y + 1.2) <= 0.3
+	if(norm<0.3){ //abs(this->vector_x + 1.7) <= 0.3 && abs(this->vector_y + 1.2) <= 0.3
 		ROS_INFO("start to land");		
 		target_now[2] = 0;
 		std::cout << "norm : " << norm << std::endl;
@@ -457,7 +457,7 @@ void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,
 			
 		}*/
 	}
-	else if (norm>1.5)
+	else if (norm>0.6)
 	{
 		ROS_INFO("too far away from apriltag");
 		state = autopilot_state::detection_and_move;

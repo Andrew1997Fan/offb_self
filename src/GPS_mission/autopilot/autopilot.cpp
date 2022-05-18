@@ -64,7 +64,7 @@ void autopilot::update(double *recent_pose){
 
 		this->gps.update(lat,lon,alt);
 		this->gps.get_ENU(target_now);
-		target_now[2] = 2.5;
+		target_now[2] = 3;
 
 		std::cout << "target_now[0]:" << target_now[0] << std::endl;
 		std::cout << "target_now[1]:" << target_now[1] << std::endl;
@@ -164,7 +164,7 @@ void autopilot::show_waypoints(){
 void  autopilot::takeoff(){
 	target_now[0] = pose_start[0];
 	target_now[1] = pose_start[1];
-	target_now[2] = 2.5;
+	target_now[2] = 3;
 }
 
 // Apriltags
@@ -238,8 +238,8 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 					//camera to IMU
 					Eigen::Matrix4d camera2IMU_transformation_matrix;//ignore camera imu hardware 
 					camera2IMU_transformation_matrix << 0, -1, 0, 0,
-														 -1, 0, 0,     0,
-														 0, 0,-1, 0,
+														 -1, 0, 0,     -.012,
+														 0, 0,-1, -0.12,
 														 0, 0, 0,     1;
 
 					Eigen::Vector4d TC_IMU;
@@ -253,8 +253,8 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 					Eigen::Matrix3d odometry_rotation_matrix;
 					odometry_rotation_matrix = odometry_quaternion.toRotationMatrix();
 					Eigen::Matrix4d Timu2w_transformation_matrix; //imu to world
-					Timu2w_transformation_matrix << odometry_rotation_matrix(0,0),odometry_rotation_matrix(0,1),odometry_rotation_matrix(0,2),pose_now[1],
-												  odometry_rotation_matrix(1,0),odometry_rotation_matrix(1,1),odometry_rotation_matrix(1,2),-pose_now[0], 
+					Timu2w_transformation_matrix << odometry_rotation_matrix(0,0),odometry_rotation_matrix(0,1),odometry_rotation_matrix(0,2),pose_now[0],
+												  odometry_rotation_matrix(1,0),odometry_rotation_matrix(1,1),odometry_rotation_matrix(1,2),pose_now[1], 
 												  odometry_rotation_matrix(2,0),odometry_rotation_matrix(2,1),odometry_rotation_matrix(2,2),pose_now[2],
 												                         0,                       0,                       0,          1;
 
@@ -339,7 +339,7 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 					//std::cout << "target_now[1]:" << target_now[1] << std::endl;
 					//if
 
-					if (norm<=0.6){
+					if (norm<=0.5){
 						ROS_INFO_ONCE("above apriltag and go on next state");
 						state = autopilot_state::apriltag;
 					}
@@ -442,7 +442,7 @@ void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,
 	// double y_dis = this->vector_y + 1.2 ;
 	// norm = sqrt((x_dis)*(x_dis)+(y_dis)*(y_dis));
 
-	if(norm<0.3){ //abs(this->vector_x + 1.7) <= 0.3 && abs(this->vector_y + 1.2) <= 0.3
+	if(norm<0.2){ //abs(this->vector_x + 1.7) <= 0.3 && abs(this->vector_y + 1.2) <= 0.3
 		ROS_INFO("start to land");		
 		target_now[2] = 0;
 		std::cout << "norm : " << norm << std::endl;
@@ -457,7 +457,7 @@ void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,
 			
 		}*/
 	}
-	else if (norm>0.6)
+	else if (norm>0.5)
 	{
 		ROS_INFO("too far away from apriltag");
 		state = autopilot_state::detection_and_move;

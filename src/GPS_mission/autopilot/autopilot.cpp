@@ -205,7 +205,7 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 
 					// fake apriltag
 					Eigen::Vector4d fake_apriltag_tf;
-					fake_apriltag_tf <<0.1,0.1,3,1;
+					fake_apriltag_tf <<this->vector_x,this->vector_y,this->vector_z,1;
 
 					// //Quaternion to Rotation matrix (camera in apriltag frame so need a transformation matrix)
 					// Eigen::Quaterniond apriltag2camera_quaternion(this->q_w,this->q_x,this->q_y,this->q_z);

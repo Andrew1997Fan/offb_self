@@ -83,7 +83,7 @@ void autopilot::update(double *recent_pose){
 		}
 	}
 	if(get_state() == autopilot_state::detection_and_move){
-		detection_and_move(this->vector_x,this->vector_y,this->vector_z,this->q_x,this->q_y,this->q_z,this->q_w,this->q_odometry_x,this->q_odometry_y,this->q_odometry_z,this->q_odometry_w,this->odometry_x,this->odometry_y,this->odometry_z);
+		detection_and_move(this->vector_x,this->vector_y,this->vector_z,this->q_x,this->q_y,this->q_z,this->q_w,this->q_imu_x,this->q_imu_y,this->q_imu_z,this->q_imu_w);
 	}
 	
 	if (get_state() == autopilot_state::apriltag){
@@ -92,7 +92,7 @@ void autopilot::update(double *recent_pose){
 	}
 	
 	if (get_state() == autopilot_state::land){
-		land(this->vector_x,this->vector_y,this->vector_z,this->q_x,this->q_y,this->q_z,this->q_w,this->q_odometry_x,this->q_odometry_y,this->q_odometry_z,this->q_odometry_w,this->odometry_x,this->odometry_y,this->odometry_z);
+		land(this->vector_x,this->vector_y,this->vector_z,this->q_x,this->q_y,this->q_z,this->q_w,this->q_imu_x,this->q_imu_y,this->q_imu_z,this->q_imu_w);
 		ROS_INFO_ONCE("start landing");
 		if(pose_now[2]<=0.10){ //something strange here why it can pass this one
 			land_ok = true;
@@ -168,7 +168,7 @@ void  autopilot::takeoff(){
 }
 
 // Apriltags
-void autopilot::detection_and_move(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_odometry_x,double q_odometry_y,double q_odometry_z,double q_odometry_w,double odometry_x,double odometry_y, double odometry_z){
+void autopilot::detection_and_move(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_imu_x,double q_imu_y,double q_imu_z,double q_imu_w){
 
 		std::cout<<"in detection_and_move state"<<std::endl;
 		if(this->vector_x != 0 && this->vector_y != 0){ //see apriltag
@@ -205,7 +205,7 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 
 					// fake apriltag
 					Eigen::Vector4d fake_apriltag_tf;
-					fake_apriltag_tf << this->vector_x,this->vector_y,this->vector_z,1;
+					fake_apriltag_tf <<0.1,0.1,3,1;
 
 					// //Quaternion to Rotation matrix (camera in apriltag frame so need a transformation matrix)
 					// Eigen::Quaterniond apriltag2camera_quaternion(this->q_w,this->q_x,this->q_y,this->q_z);
@@ -238,7 +238,7 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 					//camera to IMU
 					Eigen::Matrix4d camera2IMU_transformation_matrix;//ignore camera imu hardware 
 					camera2IMU_transformation_matrix << 0, -1, 0, 0,
-														 -1, 0, 0,     -.012,
+														 -1, 0, 0,     -0.12,
 														 0, 0,-1, -0.12,
 														 0, 0, 0,     1;
 
@@ -249,13 +249,13 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 					
 
 					//IMU quaternion (odometry = imu)
-					Eigen::Quaterniond odometry_quaternion(this->q_odometry_x,this->q_odometry_y,this->q_odometry_z,this->q_odometry_w);
-					Eigen::Matrix3d odometry_rotation_matrix;
-					odometry_rotation_matrix = odometry_quaternion.toRotationMatrix();
+					Eigen::Quaterniond imu_quaternion(this->q_imu_x,this->q_imu_y,this->q_imu_z,this->q_imu_w);
+					Eigen::Matrix3d imu_rotation_matrix;
+					imu_rotation_matrix = imu_quaternion.toRotationMatrix();
 					Eigen::Matrix4d Timu2w_transformation_matrix; //imu to world
-					Timu2w_transformation_matrix << odometry_rotation_matrix(0,0),odometry_rotation_matrix(0,1),odometry_rotation_matrix(0,2),pose_now[0],
-												  odometry_rotation_matrix(1,0),odometry_rotation_matrix(1,1),odometry_rotation_matrix(1,2),pose_now[1], 
-												  odometry_rotation_matrix(2,0),odometry_rotation_matrix(2,1),odometry_rotation_matrix(2,2),pose_now[2],
+					Timu2w_transformation_matrix << imu_rotation_matrix(0,0),imu_rotation_matrix(0,1),imu_rotation_matrix(0,2),pose_now[1],
+												  imu_rotation_matrix(1,0),imu_rotation_matrix(1,1),imu_rotation_matrix(1,2),-pose_now[0], 
+												  imu_rotation_matrix(2,0),imu_rotation_matrix(2,1),imu_rotation_matrix(2,2),pose_now[2],
 												                         0,                       0,                       0,          1;
 
 					std::cout << "Timu2w" << Timu2w_transformation_matrix << std::endl;
@@ -436,7 +436,7 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 }
 
 // adding apriltag info into landing state
-void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_odometry_x,double q_odometry_y,double q_odometry_z,double q_odometry_w,double odometry_x,double odometry_y, double odometry_z){
+void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_imu_x,double q_imu_y,double q_imu_z,double q_imu_w){
 	std::cout << "in landing state" <<std::endl;
 	// double x_dis = this->vector_x + 1.7 ;
 	// double y_dis = this->vector_y + 1.2 ;
@@ -444,10 +444,15 @@ void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,
 
 	if(norm<0.2){ //abs(this->vector_x + 1.7) <= 0.3 && abs(this->vector_y + 1.2) <= 0.3
 		ROS_INFO("start to land");		
-		target_now[2] = 0;
+		target_now[2]=pose_now[2]-0.05; //target_now[2]-0.001
 		std::cout << "norm : " << norm << std::endl;
 		std::cout << "height_now[2]:" << pose_now[2] << std::endl;
 		std::cout << "target_height_now[2]:" << target_now[2] << std::endl;
+		if(pose_now[2]<= 0.3){
+			ROS_INFO("Finish landing state");
+			target_now[2] = 0;
+
+		}
 		/*if(norm<0.25){
 			ROS_INFO("start to land");		
 			target_now[2] = pose_now[2] - 0.3;

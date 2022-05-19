@@ -22,12 +22,12 @@ class autopilot{
 		void show_waypoints();
 		
 		void takeoff();
-		void land(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_odometry_x,double q_odometry_y,double q_odometry_z,double q_odometry_w,double odometry_x,double odometry_y, double odometry_z);
+		void land(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_imu_x,double q_imu_y,double q_imu_z,double q_imu_w);
 		void mission_start();
 		void mission_stop();
 		//Apriltags
-		void apriltag(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_odometry_x,double q_odometry_y,double q_odometry_z,double q_odometry_w,double odometry_x,double odometry_y, double odometry_z);
-		void detection_and_move(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_odometry_x,double q_odometry_y,double q_odometry_z,double q_odometry_w,double odometry_x,double odometry_y, double odometry_z);
+		void apriltag(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_imu_x,double q_imu_y,double q_imu_z,double q_imu_w);
+		void detection_and_move(double vector_x,double vector_y,double vector_z,double q_x,double q_y,double q_z,double q_w,double q_imu_x,double q_imu_y,double q_imu_z,double q_imu_w);
 
 
 		bool is_arrived_xy();
@@ -48,7 +48,7 @@ class autopilot{
 		//Quaternion rotation
 		//double R11,R12,R13,R21,R22,R23,R31,R32,R33;
 		double q_x,q_y,q_z,q_w;
-		double q_odometry_x,q_odometry_y,q_odometry_z,q_odometry_w,odometry_x,odometry_y,odometry_z;
+		double q_imu_x,q_imu_y,q_imu_z,q_imu_w;
 
 		double target_now[3];
 		double pose_now[3];

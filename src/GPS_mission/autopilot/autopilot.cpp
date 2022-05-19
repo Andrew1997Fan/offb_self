@@ -441,10 +441,17 @@ void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,
 	// double x_dis = this->vector_x + 1.7 ;
 	// double y_dis = this->vector_y + 1.2 ;
 	// norm = sqrt((x_dis)*(x_dis)+(y_dis)*(y_dis));
+	double error_x = target_now[0]-pose_now[0];
+	double error_y = target_now[1]-pose_now[1];
+	std::cout << "errorq_x:" << error_x << std::endl;
+	std::cout << "errorq_y:" << error_y << std::endl;
+
+	norm = sqrt(std::pow(error_x,2) + std::pow(error_y,2));
+	std::cout << "norm:" << norm << std::endl;
 
 	if(norm<0.2){ //abs(this->vector_x + 1.7) <= 0.3 && abs(this->vector_y + 1.2) <= 0.3
 		ROS_INFO("start to land");		
-		target_now[2]=pose_now[2]-0.05; //target_now[2]-0.001
+		target_now[2]=pose_now[2]-0.1; //target_now[2]-0.001
 		std::cout << "norm : " << norm << std::endl;
 		std::cout << "height_now[2]:" << pose_now[2] << std::endl;
 		std::cout << "target_height_now[2]:" << target_now[2] << std::endl;

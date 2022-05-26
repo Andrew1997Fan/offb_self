@@ -23,10 +23,10 @@
 
 #define XY_VEL_MAX 0.5
 //gain
-#define KPx 0.2f//1   3
-#define KPy 0.2f//1   3
-#define KPz 0.2f//
-#define KProll 0.2f//1  2
+#define KPx 1.0f//1   3
+#define KPy 1.0f//1   3
+#define KPz 1.0f//
+#define KProll 1.0f//1  2
 
 bool init=0;
 double vector_x = 0;
@@ -251,7 +251,7 @@ int main(int argc, char **argv)
 	//ap.add_waypoint(47.3977438,8.5456034,535.120903528);//gazebo(0.7,0.2,0)
 	//ap.add_waypoint(47.397748,8.5456032,535.207905821);
 	//ap.add_waypoint(24.7869119,120.9934255,120.577500361);
-	ap.add_waypoint(47.3977459,8.5456325,535.092863736);
+	ap.add_waypoint(47.3977507,8.5456742,535.312807819);
 	//ap.add_waypoint(47.3977871,8.5455936,535.3093731);//gazebo(0,5,0)
 	//ap.add_waypoint(47.3977422,8.5456602,535.327822807);//gazebo(5,0,0,0)
 	//ap.add_waypoint(24.7866673,120.9931711,106.093341741);

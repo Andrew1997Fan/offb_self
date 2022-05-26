@@ -1,0 +1,47 @@
+定義 error = (target_now - pose_now)
+定義 norm = error_x ＆ error_y的平方根總和
+
+mission start = True //任務開始
+
+if(mission_start = True){
+    state = takeoff
+}
+
+if(state = takeoff){
+    判斷當前高度與目標高度是否小於error
+    Yes -> state = follow_waypoint
+    No -> state = pose
+}
+
+if(state = follow_waypoint){
+    判斷當前XY座標與現在XY座標是否小於error
+        判斷現在到第幾個waypoint
+        第N-1個 -> 繼續到下一個waypoint
+        第N個 -> state = detection_and_move
+}
+
+if(detection_and_move){
+    判斷相機是否照到Apriltag且回傳tf值
+        判斷目標高度與現在高度是否小於error
+            將相機獲得的tf值經由座標轉換轉至world frame
+            更新waypoint為經轉後過後的apriltag在世界的座標
+            
+            判斷norm是否小於045
+            Yes -> state = land
+            No -> 目標位置 = 現在位置＋error
+}
+
+if(state = land){
+    判斷norm是否小於 0.1
+    Yes -> 目標高度 = 現在高度 - 0.15
+        判斷現在高度是否小於 0.3
+        Yes -> 降落
+    No -> 判斷norm是否介於0.45 ~ 0.1
+        Yes -> 目標位置 = 現在位置＋error
+        No - > 回到 state = detection_and_move
+    
+    判斷現在高度是否小於 0.1
+    Yes -> state = not_flying
+}
+
+

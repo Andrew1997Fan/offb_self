@@ -64,7 +64,7 @@ void autopilot::update(double *recent_pose){
 
 		this->gps.update(lat,lon,alt);
 		this->gps.get_ENU(target_now);
-		target_now[2] = 3;
+		target_now[2] = 4;
 
 		std::cout << "target_now[0]:" << target_now[0] << std::endl;
 		std::cout << "target_now[1]:" << target_now[1] << std::endl;
@@ -98,6 +98,9 @@ void autopilot::update(double *recent_pose){
 			land_ok = true;
 			std::cout << "ready to disarm\n";
 			state = autopilot_state::not_flying;
+			if(get_state() == autopilot_state::not_flying){
+				ROS_INFO_ONCE("disarm\n");
+			}
 			in_mission = false;
 		}
 	}
@@ -119,12 +122,12 @@ void autopilot::mission_stop(){
 
 void autopilot::mission_start(){
 	if (in_mission == false){
-	state = autopilot_state::takeoff;
-	in_mission = true;
-	waypoint_num = 0;
-	pose_start[0] = pose_now[0];
-	pose_start[1] = pose_now[1];
-	pose_start[2] = pose_now[2];
+		state = autopilot_state::takeoff;
+		in_mission = true;
+		waypoint_num = 0;
+		pose_start[0] = pose_now[0];
+		pose_start[1] = pose_now[1];
+		pose_start[2] = pose_now[2];
 	}
 	else{
 		std::cout << "already in mission\n";
@@ -164,7 +167,7 @@ void autopilot::show_waypoints(){
 void  autopilot::takeoff(){
 	target_now[0] = pose_start[0];
 	target_now[1] = pose_start[1];
-	target_now[2] = 3;
+	target_now[2] = 4;
 }
 
 // Apriltags
@@ -205,7 +208,7 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 
 					// fake apriltag
 					Eigen::Vector4d fake_apriltag_tf;
-					fake_apriltag_tf <<this->vector_x,this->vector_y,this->vector_z,1;
+					fake_apriltag_tf <<-(this->vector_y+1.6),(this->vector_x+2.3),this->vector_z,1;
 
 					// //Quaternion to Rotation matrix (camera in apriltag frame so need a transformation matrix)
 					// Eigen::Quaterniond apriltag2camera_quaternion(this->q_w,this->q_x,this->q_y,this->q_z);
@@ -339,10 +342,12 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 					//std::cout << "target_now[1]:" << target_now[1] << std::endl;
 					//if
 
-					if (norm<=0.5){
+					if (norm<=0.45){
 						ROS_INFO_ONCE("above apriltag and go on next state");
 						state = autopilot_state::apriltag;
 					}
+					
+					
 					else{
 						ROS_INFO_ONCE("not above apriltag still remain detection state");
 						double error_x = target_now[0]-body_ENU(0);
@@ -449,17 +454,22 @@ void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,
 	norm = sqrt(std::pow(error_x,2) + std::pow(error_y,2));
 	std::cout << "norm:" << norm << std::endl;
 
-	if(norm<0.2){ //abs(this->vector_x + 1.7) <= 0.3 && abs(this->vector_y + 1.2) <= 0.3
-		ROS_INFO("start to land");		
-		target_now[2]=pose_now[2]-0.1; //target_now[2]-0.001
+	if(norm<0.1){ //abs(this->vector_x + 1.7) <= 0.3 && abs(this->vector_y + 1.2) <= 0.3
+		ROS_INFO("start to land");
+
+		target_now[2]=pose_now[2]-0.15; //target_now[2]-0.001
 		std::cout << "norm : " << norm << std::endl;
 		std::cout << "height_now[2]:" << pose_now[2] << std::endl;
 		std::cout << "target_height_now[2]:" << target_now[2] << std::endl;
-		if(pose_now[2]<= 0.3){
-			ROS_INFO("Finish landing state");
-			target_now[2] = 0;
+		std::cout << "pose_now[0]:" << pose_now[0] << std::endl;
+		std::cout << "pose_now[1]:" << pose_now[1] << std::endl;
+		std::cout << "target_now[0]:" << target_now[0] << std::endl;
+		std::cout << "target_now[1]:" << target_now[1] << std::endl;
+		// if(pose_now[2]<= 0.3){
+		// 	ROS_INFO("Finish landing state");
+		// 	target_now[2] = 0;
 
-		}
+		// }
 		/*if(norm<0.25){
 			ROS_INFO("start to land");		
 			target_now[2] = pose_now[2] - 0.3;
@@ -469,7 +479,7 @@ void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,
 			
 		}*/
 	}
-	else if (norm>0.5)
+	else if (norm>0.45)
 	{
 		ROS_INFO("too far away from apriltag");
 		state = autopilot_state::detection_and_move;

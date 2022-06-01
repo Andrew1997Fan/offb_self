@@ -187,8 +187,8 @@ void autopilot::detection_and_move(double vector_x,double vector_y,double vector
 
 					//camera to IMU
 					Eigen::Matrix4d camera2IMU_transformation_matrix;//ignore camera imu hardware 
-					camera2IMU_transformation_matrix << 0, -1, 0, 0,
-														 -1, 0, 0,     -0.12,
+					camera2IMU_transformation_matrix << 0, 1, 0, 0,
+														 1, 0, 0,     0.1,
 														 0, 0,-1, -0.12,
 														 0, 0, 0,     1;
 
@@ -311,6 +311,8 @@ void autopilot::land(double vector_x,double vector_y,double vector_z,double q_x,
 		std::cout << "pose_now[1]:" << pose_now[1] << std::endl;
 		std::cout << "target_now[0]:" << target_now[0] << std::endl;
 		std::cout << "target_now[1]:" << target_now[1] << std::endl;
+		std::cout << "tf_x:" << vector_x << std::endl;
+		std::cout << "tf_y:" << vector_y << std::endl;
 
 
 	}
